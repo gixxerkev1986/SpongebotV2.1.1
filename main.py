@@ -1,35 +1,33 @@
 import discord
 from discord.ext import commands
 import os
-from commands import (
-    intro, analyse, accumuleer, alert, dagelijks,
-    setexchange, setfee, signal, smartanalyse, simulate
-)
+import asyncio
+from dotenv import load_dotenv
+load_dotenv()
 
+TOKEN = os.getenv("DISCORD_TOKEN")
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"Bot is klaar als {bot.user}")
-
-# Add all cogs
-async def setup():
-    await bot.add_cog(intro.Intro(bot))
-    await bot.add_cog(analyse.Analyse(bot))
-    await bot.add_cog(accumuleer.Accumuleer(bot))
-    await bot.add_cog(alert.Alert(bot))
-    await bot.add_cog(dagelijks.Dagelijks(bot))
-    await bot.add_cog(setexchange.SetExchange(bot))
-    await bot.add_cog(setfee.SetFee(bot))
-    await bot.add_cog(signal.Signal(bot))
-    await bot.add_cog(smartanalyse.SmartAnalyse(bot))
-    await bot.add_cog(simulate.Simulate(bot))
+    print(f"✅ Ingelogd als {bot.user}")
     try:
         synced = await bot.tree.sync()
-        print(f"Slash commands gesynchroniseerd: {len(synced)}")
+        print(f"✅ Slash commands gesynchroniseerd ({len(synced)} commando's)")
     except Exception as e:
-        print(e)
+        print(f"⚠️  Fout bij sync: {e}")
+    await load_cogs()
 
-bot.loop.create_task(setup())
-bot.run(os.getenv("DISCORD_TOKEN"))
+async def load_cogs():
+    await bot.load_extension("commands.analyse")
+
+async def main():
+    async with bot:
+        await main_startup()
+        await bot.start(TOKEN)
+
+async def main_startup():
+    pass
+
+asyncio.run(main())
